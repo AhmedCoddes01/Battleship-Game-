@@ -1,0 +1,76 @@
+#lang racket/gui
+(require dyoo-while-loop)
+
+(define score 0)
+
+(play-sound "Final Battle of the Dark Wizards.mp3" #t)
+
+(define frame (new frame% [label "Snake"]
+                   [alignment '(left top)]
+                   [stretchable-width #f]	 
+                   [stretchable-height #f]
+                   [min-width 1024]	 
+                   [min-height 768]))
+
+(define my-canvas%
+  (class canvas% 
+    (define/override (on-char key-event)
+               (while (equal? (send key-event get-key-code) #\space) (display newthing))
+               (while (equal? (send key-event get-key-code) 'right) 
+(set! newthing (vector-append newthing (vector (vector-ref snake 0))))(vector-set! snake 0 (vector (+ (vector-ref (vector-ref snake 0) 0) 20) (vector-ref (vector-ref snake 0) 1)))
+       (set! newthing (cond ((> (vector-length newthing ) 3) (vector-drop newthing (- (vector-length newthing) snake_length))  ) (else newthing)))
+       (move newthing)
+                      )
+      
+      (while (equal? (send key-event get-key-code) 'left)
+(set! newthing (vector-append newthing (vector (vector-ref snake 0))))(vector-set! snake 0 (vector (- (vector-ref (vector-ref snake 0) 0) 20) (vector-ref (vector-ref snake 0) 1)))
+       (set! newthing (cond ((> (vector-length newthing ) 3) (vector-drop newthing (- (vector-length newthing) snake_length))  ) (else newthing)))
+       (move newthing)
+                      )
+      (while (equal? (send key-event get-key-code) 'down)
+(set! newthing (vector-append newthing (vector (vector-ref snake 0))))(vector-set! snake 0 (vector (vector-ref (vector-ref snake 0) 0) (+ (vector-ref (vector-ref snake 0) 1) 20)))
+       (set! newthing (cond ((> (vector-length newthing ) 3) (vector-drop newthing (- (vector-length newthing) snake_length))  ) (else newthing)))
+       (move newthing)
+                      )
+      
+      (while (equal? (send key-event get-key-code) 'up)
+(set! newthing (vector-append newthing (vector (vector-ref snake 0))))(vector-set! snake 0 (vector (vector-ref (vector-ref snake 0) 0) (- (vector-ref (vector-ref snake 0) 1) 20)))
+       (set! newthing (cond ((> (vector-length newthing ) 3) (vector-drop newthing (- (vector-length newthing) snake_length))  ) (else newthing)))
+       (move newthing)
+                      ))
+   
+    (super-new)))
+(define x(new my-canvas% [parent frame]
+     [paint-callback
+      (lambda (canvas dc)
+        (send dc set-font (make-font #:size 20 #:family 'modern #:weight 'bold))
+        (send dc draw-text "SNAKE" 300 200)
+        )]))
+
+(define snake_length 3)
+
+(define snake(vector (vector 0 60) ))
+
+(define coordinates(for*/vector ([i (range 10 400 10)] [j (range 10 300 10)]) (vector i j)))
+
+(vector-ref (vector-ref coordinates (random 224)) 0)
+
+(vector-ref (vector-ref coordinates (random 224)) 1)
+
+(define dc (send x get-dc))
+
+(define button(new button% (parent frame) (label "") (callback (lambda (button event) (set! snake_length (+ snake_length 1)) ))))
+(send frame show #t)
+
+(send dc set-brush (new brush% [color "lime green"]))
+(define newthing(vector ))
+(define move(λ (x) (sleep/yield 0.07) (send dc clear)
+              (send dc draw-text (string-join (for/list ([i newthing]) (string-append (number->string (+ 1 (vector-member i newthing))) "." " x" (number->string (vector-ref i 0)) " y" (number->string (vector-ref i 1))))) 5 40)
+              (for ([i x])
+                (send dc set-pen "dark green" 0.5 'solid)
+                (send dc draw-text (string-append "Snake length: " (number->string snake_length)) 5 0)
+                (send dc draw-text (string-append "Snake: " (number->string (vector-ref (vector-ref snake 0) 0)) " " (number->string (vector-ref (vector-ref snake 0) 1))) 5 20)
+                
+                (send dc draw-rectangle (vector-ref i 0) (vector-ref i 1) 20 20))
+              ))
+
